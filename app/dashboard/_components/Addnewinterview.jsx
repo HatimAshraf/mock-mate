@@ -18,7 +18,8 @@ import { db } from '@/utils/db';
 import { mockInterview } from '@/utils/schema';
 import { useUser } from '@clerk/nextjs';
 import moment from 'moment';
-import { Router, useRouter } from 'next/router';
+import { Router } from 'next/router';
+import { useRouter } from 'next/compat/router';
 
 function Addnewinterview() {
   const [openDialog, setopenDialog] = useState(false);
@@ -37,7 +38,7 @@ function Addnewinterview() {
     const InputPrompt = `Job Position: ${jobPosition},
       Job Description: ${jobDescription},
        Years of Experience: ${jobExperience}, 
-       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in jSON format. give Question and answered as field in JSON`;
+       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in jSON format make sure that questions is based on techinical interview.Also, give Question and answered as field in JSON`;
 
     const result = await chatSession.sendMessage(InputPrompt);
     const jsonResponse = result.response
@@ -49,7 +50,7 @@ function Addnewinterview() {
     setmockQuestions(MockQuestions);
 
     if (MockQuestions) {
-      const response = await db
+      let response = await db
         .insert(mockInterview)
         .values({
           jsonMockResp: MockQuestions,
@@ -67,7 +68,7 @@ function Addnewinterview() {
 
     if (response) {
       setopenDialog(false);
-      Router.push('dashboard/interview/' + response[0]?.mockId);
+      Router.push('dashboard/interview/' + response[1]?.mockId);
     } else {
       console.log('error');
     }

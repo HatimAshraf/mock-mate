@@ -6,9 +6,9 @@ import React, { useEffect } from 'react';
 
 function Header() {
   const path = usePathname();
-  useEffect(() => {
-    console.log('path is:', path);
-  }, []);
+  // useEffect(() => {
+  //   console.log('path is:', path);
+  // }, []);
   return (
     <div className='flex p-4 items-center justify-between bg-secondary shadow-md '>
       <Image src={'/logo.svg'} width={50} height={50} alt={'logo'} />
