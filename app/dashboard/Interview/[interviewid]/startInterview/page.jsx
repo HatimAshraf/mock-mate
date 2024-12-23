@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import QuestionsSection from './_components/QuestionsSection';
+import RecordAnsSection from './_components/RecordAnsSection';
 
 function StartInterview() {
   const params = useParams();
@@ -42,11 +43,13 @@ function StartInterview() {
 
   return (
     <div>
-      <div className='grid grid-cols-1 md:grid-cols-2 mt-5'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
         <QuestionsSection
           mockInterviewQuestion={mockInterviewQuestion}
           activeQuestionIndex={activeQuestionIndex}
         />
+
+        <RecordAnsSection />
       </div>
     </div>
   );
