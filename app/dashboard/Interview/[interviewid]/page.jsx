@@ -4,12 +4,14 @@ import { db } from '@/utils/db';
 import { mockInterview } from '@/utils/schema';
 import { eq } from 'drizzle-orm';
 import { Lightbulb, LoaderCircle, WebcamIcon } from 'lucide-react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
 
 function Interview() {
   const params = useParams();
+  const generatedId = params.interviewid;
   const [interviewData, setinterviewData] = useState();
   const [webCamEnabled, setwebCamEnabled] = useState();
 
@@ -19,8 +21,6 @@ function Interview() {
 
   const getInterviewDetails = async () => {
     try {
-      const generatedId = params.interviewid;
-
       const result = await db
         .select()
         .from(mockInterview)
@@ -40,18 +40,18 @@ function Interview() {
             {interviewData ? (
               <>
                 <h2 className='text-lg'>
-                  <strong>Job Title / Job Position:</strong>
+                  <strong>Job Title / Job Position: </strong>
                   {interviewData.jobPosition}
                 </h2>
 
                 <h2 className='text-lg'>
                   {' '}
-                  <strong>Job Description:</strong>
+                  <strong>Job Description: </strong>
                   {interviewData.jobDescription}
                 </h2>
                 <h2 className='text-lg'>
                   {' '}
-                  <strong>Years of Experience:</strong>
+                  <strong>Years of Experience: </strong>
                   {interviewData.jobExperience}
                 </h2>
               </>
@@ -109,8 +109,14 @@ function Interview() {
           )}
         </div>
       </div>
-      <div className='flex justify-start items-end mt-5'>
-        <Button className='text-lg p-5'>Let's Start MockMate Interview</Button>
+      <div className='flex justify-center items-center mt-16'>
+        <Link
+          href={
+            '/dashboard/Interview/' + params.interviewid + '/startInterview'
+          }
+        >
+          <Button className='text-lg p-8'>Start Interview</Button>
+        </Link>
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import { useUser } from '@clerk/nextjs';
 import moment from 'moment';
 import { Router } from 'next/router';
 import { useRouter } from 'next/compat/router';
+import Link from 'next/link';
 
 function Addnewinterview() {
   const [openDialog, setopenDialog] = useState(false);
@@ -27,7 +28,7 @@ function Addnewinterview() {
   const [jobDescription, setjobDescription] = useState('');
   const [jobExperience, setjobExperience] = useState('');
   const [isLoading, setisLoading] = useState(false);
-  const [mockQuestions, setmockQuestions] = useState([]);
+  const [JsonResponse, setJsonResponse] = useState([]);
   const { user } = useUser();
   const router = useRouter();
 
@@ -38,22 +39,21 @@ function Addnewinterview() {
     const InputPrompt = `Job Position: ${jobPosition},
       Job Description: ${jobDescription},
        Years of Experience: ${jobExperience}, 
-       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in jSON format make sure that questions is based on techinical interview.Also, give Question and answered as field in JSON`;
+       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in jSON format make sure that questions is based on techinical interview.Also, give Question and answered as field in JSON format`;
 
     const result = await chatSession.sendMessage(InputPrompt);
-    const jsonResponse = result.response
-      .text()
-      .replace('```json', '')
-      .replace('```', '');
-    const MockQuestions = JSON.parse(jsonResponse);
-    console.log(MockQuestions);
-    setmockQuestions(MockQuestions);
+    const MockJsonResp = result.response
+      .text() // Replace escaped quotes
+      .replace('```json', '') // Remove the JSON code block markers
+      .replace('```', ''); // Remove the closing code block markers
 
-    if (MockQuestions) {
-      let response = await db
+    setJsonResponse(MockJsonResp);
+
+    if (MockJsonResp) {
+      const resp = await db
         .insert(mockInterview)
         .values({
-          jsonMockResp: MockQuestions,
+          jsonMockResp: MockJsonResp,
           jobPosition: jobPosition,
           jobDescription: jobDescription,
           jobExperience: jobExperience,
@@ -63,14 +63,18 @@ function Addnewinterview() {
         })
         .returning({ mockId: mockInterview.mockId });
 
-      console.log('Inserted ID: ', response);
-    }
+      console.log('Inserted ID: ', resp);
 
-    if (response) {
-      setopenDialog(false);
-      Router.push('dashboard/interview/' + response[1]?.mockId);
+      if (resp) {
+        setopenDialog(false);
+        <Link
+          href={'/dashboard/interview/' + resp[0]?.mockId}
+          target='_blank'
+        ></Link>;
+        // router.push('dashboard/interview/' + resp[0]?.mockId);
+      }
     } else {
-      console.log('error');
+      console.log('ERROR');
     }
 
     setisLoading(false);
@@ -135,7 +139,7 @@ function Addnewinterview() {
                     {isLoading ? (
                       <>
                         <LoaderCircle className='animate-spin' />
-                        Generating from AI
+                        Generating Questionnaire
                       </>
                     ) : (
                       'Start Interview'

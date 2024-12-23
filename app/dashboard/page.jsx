@@ -1,5 +1,3 @@
-import { UserButton } from '@clerk/nextjs';
-import React from 'react';
 import Addnewinterview from './_components/Addnewinterview';
 
 function Dashboard() {
