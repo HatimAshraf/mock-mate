@@ -5,9 +5,23 @@ import React, { useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
 import useSpeechToText from 'react-hook-speech-to-text';
 import { Mic, StopCircle } from 'lucide-react';
+import { Toaster } from '@/components/ui/toaster';
+import { toast } from 'sonner';
+import { chatSession } from '@/utils/GeminiAIModel';
+import { db } from '@/utils/db';
+import { useUser } from '@clerk/nextjs';
+import { UserAnswer } from '@/utils/schema';
+import moment from 'moment';
 
-function RecordAnsSection() {
-  const [userAnswer, setuserAnswer] = useState('');
+function RecordAnsSection({
+  mockInterviewQuestion,
+  interviewData,
+  activeQuestionIndex,
+  setactiveQuestionIndex,
+}) {
+  const [userAnswerr, setuserAnswerr] = useState('');
+  const { user } = useUser();
+  const [isLoading, setisLoading] = useState(false);
   const {
     error,
     interimResult,
@@ -15,6 +29,7 @@ function RecordAnsSection() {
     results,
     startSpeechToText,
     stopSpeechToText,
+    setResults,
   } = useSpeechToText({
     continuous: true,
     useLegacyResults: false,
@@ -22,16 +37,64 @@ function RecordAnsSection() {
 
   useEffect(() => {
     results.map((result) => {
-      setuserAnswer((prev) => prev + result?.transcript);
+      setuserAnswerr((prev) => prev + result?.transcript);
     });
   }, [results]);
 
-  const SaveUserAnswer = () => {
+  useEffect(() => {
+    if (!isRecording && userAnswerr.length > 10) {
+      UpdateUserAnswer();
+    }
+  }, [userAnswerr]);
+
+  const SaveUserAnswer = async () => {
     if (isRecording) {
       stopSpeechToText();
     } else {
       startSpeechToText();
     }
+  };
+
+  const UpdateUserAnswer = async () => {
+    setisLoading(true);
+    const feedbackPrompt =
+      'Question: ' +
+      mockInterviewQuestion[activeQuestionIndex]?.question +
+      ', User Answer: ' +
+      userAnswerr +
+      ', Depends on question and user answer for give interview question' +
+      'please give us rating for answer and feedback as areas of improvement if any ' +
+      'in just 3 to 5 lines to improve it in JSON format with rating field and feedback field ';
+
+    const result = await chatSession.sendMessage(feedbackPrompt);
+    const MockJsonResp = result.response
+      .text() // Replace escaped quotes
+      .replace('```json', '') // Remove the JSON code block markers
+      .replace('```', ''); // Remove the closing code block markers
+    //   console.log(MockJsonResp);
+    const jsonFeedback = JSON.parse(MockJsonResp);
+    console.log(jsonFeedback);
+
+    const resp = await db.insert(UserAnswer).values({
+      mockIdRef: interviewData?.mockId,
+      question: mockInterviewQuestion[activeQuestionIndex]?.question,
+      correctAnswer: mockInterviewQuestion[activeQuestionIndex]?.answer,
+      userAns: userAnswerr,
+      feedback: jsonFeedback?.feedback,
+      rating: jsonFeedback?.rating,
+      userEmail: user?.primaryEmailAddress?.emailAddress,
+      createdAt: moment().format('DD-MM-YYYY HH:mm:ss'),
+      updatedAt: moment().format('DD-MM-YYYY HH:mm:ss'),
+    });
+
+    if (resp) {
+      toast('User Answer recorded successfully');
+      setuserAnswerr('');
+      setResults([]);
+    }
+
+    setResults([]);
+    setisLoading(false);
   };
 
   return (
@@ -50,6 +113,7 @@ function RecordAnsSection() {
         />
         <Button
           className='mb-5 p-6 text-md font-medium'
+          disabled={isLoading}
           variant='outline'
           onClick={SaveUserAnswer}
         >
@@ -64,15 +128,7 @@ function RecordAnsSection() {
           )}
         </Button>
       </div>
-      <div>
-        <Button
-          variant='ghost'
-          className='absolute right-[130px] italic'
-          onClick={() => console.log(userAnswer)}
-        >
-          Show Answer
-        </Button>
-      </div>
+      <div></div>
     </>
   );
 }

@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { Lightbulb, LoaderCircle, Volume2Icon } from 'lucide-react';
 import React from 'react';
 
-function QuestionsSection({ mockInterviewQuestion }) {
+function QuestionsSection({
+  mockInterviewQuestion,
+  activeQuestionIndex,
+  setactiveQuestionIndex,
+}) {
   // State to track the active question index and whether speech is active
-  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  //   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [femaleVoice, setFemaleVoice] = useState(null);
 
@@ -62,9 +66,9 @@ function QuestionsSection({ mockInterviewQuestion }) {
             className={`p-2 border rounded-full text-xs md:text-sm text-center cursor-pointer ${
               activeQuestionIndex === index ? 'bg-primary text-white' : ''
             }`}
-            onClick={() => setActiveQuestionIndex(index)} // Update active question
+            onClick={() => setactiveQuestionIndex(index)} // Update active question
           >
-            Question #{index + 1}
+            Question # {index + 1}
           </h2>
         ))}
       </div>
@@ -92,9 +96,10 @@ function QuestionsSection({ mockInterviewQuestion }) {
           <strong>Information:</strong>
         </h2>
         <p>
-          Click on 'Record Answer' when you're ready to answer the question. At
-          the end of the interview, we will provide you with feedback, including
-          the correct answer for each question and your response for comparison.
+          Click on 'Start Recording' when you're ready to answer the question.
+          At the end of the interview, we will provide you with feedback,
+          including the correct answer for each question and your response for
+          comparison.
         </p>
       </div>
     </div>
