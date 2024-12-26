@@ -22,7 +22,7 @@ function InterviewList() {
       )
       .orderBy(desc(mockInterview.id));
 
-    console.log(result);
+    // console.log(result);
     setinterviewList(result);
   };
   return (

@@ -102,6 +102,7 @@ function RecordAnsSection({
       <div className='flex flex-col justify-center items-center border rounded-lg'>
         <Image
           src={'/webcam.png'}
+          alt='webcam'
           width={200}
           height={200}
           className='absolute'

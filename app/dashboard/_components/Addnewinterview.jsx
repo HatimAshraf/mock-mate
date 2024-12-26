@@ -19,8 +19,9 @@ import { mockInterview } from '@/utils/schema';
 import { useUser } from '@clerk/nextjs';
 import moment from 'moment';
 import { Router } from 'next/router';
-import { useRouter } from 'next/compat/router';
+// import { useRouter } from 'next/compat/router';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function Addnewinterview() {
   const [openDialog, setopenDialog] = useState(false);
@@ -39,7 +40,7 @@ function Addnewinterview() {
     const InputPrompt = `Job Position: ${jobPosition},
       Job Description: ${jobDescription},
        Years of Experience: ${jobExperience}, 
-       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in jSON format make sure that questions is based on techinical interview.Also, give Question and answered as field in JSON format`;
+       based on the information provided by user please generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answer in JSON format make sure that questions is based on techinical interview.Also, give Question and answered as field in JSON format. please make sure it should be stored in Array of object fields`;
 
     const result = await chatSession.sendMessage(InputPrompt);
     const MockJsonResp = result.response
@@ -65,13 +66,10 @@ function Addnewinterview() {
 
       console.log('Inserted ID: ', resp);
 
-      if (resp) {
+      if (resp.length > 0) {
+        // Ensure resp is not empty
         setopenDialog(false);
-        <Link
-          href={'/dashboard/interview/' + resp[0]?.mockId}
-          target='_blank'
-        ></Link>;
-        // router.push('dashboard/interview/' + resp[0]?.mockId);
+        router.push('/dashboard/interview/' + resp?.mockId);
       }
     } else {
       console.log('ERROR');
@@ -121,7 +119,11 @@ function Addnewinterview() {
                       <Input
                         placeholder='e.g. 2 years of experience'
                         type='number'
-                        onChange={(e) => setjobExperience(e.target.value)}
+                        onChange={(e) =>
+                          setjobExperience(
+                            e.target.value + ' Years of Experience'
+                          )
+                        }
                       />
                     </div>
                   </div>

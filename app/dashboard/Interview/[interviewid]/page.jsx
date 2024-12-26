@@ -26,7 +26,7 @@ function Interview() {
         .from(mockInterview)
         .where(eq(mockInterview.mockId, generatedId));
       console.log('results:', result[0].jsonMockResp);
-      setinterviewData(result[0]);
+      setinterviewData(result);
     } catch (error) {
       console.log(error);
     }
